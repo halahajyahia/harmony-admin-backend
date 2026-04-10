@@ -138,6 +138,7 @@ function mapParticipantRow(row) {
       "رابط الصورة",
       "תמונת פרופיל",
       "thumbnail_url",
+      "photo_url",
     ]),
   };
 }

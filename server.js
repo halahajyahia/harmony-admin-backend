@@ -8,7 +8,7 @@ const { deleteBlobByStorageKey } = require("./services/blobStorage");
 const verifyAdminToken = require("./middleware/verifyAdminToken");
 const app = express();
 const adminEventsRoutes = require("./routes/adminEvents");
-
+const matchRoutes = require("./routes/matchRoutes");
 app.use(
   cors({
 origin: process.env.FRONTEND_URL || "http://localhost:5174",
@@ -18,6 +18,8 @@ origin: process.env.FRONTEND_URL || "http://localhost:5174",
 
 app.use(express.json());
 app.use("/api/admin/events", verifyAdminToken, adminEventsRoutes);
+app.use("/api/match", matchRoutes);
+
 async function deleteExistingParticipantsForEvent(eventId) {
   const querySpec = {
     query: "SELECT c.id FROM c WHERE c.eventId = @eventId",
