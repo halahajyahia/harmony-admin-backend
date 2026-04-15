@@ -482,6 +482,7 @@ router.post("/:id/process-participants", verifyAdminToken, async (req, res) => {
           iWantToMeet: mappedRow.iWantToMeet,
           photoUrl: mappedRow.photoUrl,
           status: "pending",
+          isOnline: false,
           rawData: row,
           createdAt: now,
           updatedAt: now,
@@ -682,6 +683,7 @@ professionalResume,
   photoUrl: req.body.photoUrl?.trim?.() || "",
   updatedAt,
   status: req.body.status || existingParticipant.status,
+  isOnline: typeof req.body.isOnline === "boolean" ? req.body.isOnline : existingParticipant.isOnline,
 };
 
     const { resource: savedParticipant } =
@@ -778,6 +780,7 @@ router.post("/:id/participants", verifyAdminToken, async (req, res) => {
   updatedAt: now,
   source: "manual",
   status: "pending",
+  isOnline: false,
 };
 
     const { resource: savedParticipant } =
