@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const verifyAdminToken = require("../middleware/verifyAdminToken");
-
+const { eventsContainer } = require("../db/cosmos");
 async function parseServiceResponse(response) {
   const text = await response.text();
 
@@ -12,15 +12,30 @@ async function parseServiceResponse(response) {
   }
 }
 console.log("Registering rebuild-all route");
+
+async function updateEventMatchingStatus(eventId, status) {
+  const { resource: event } = await eventsContainer.item(eventId, eventId).read();
+
+  if (!event) {
+    throw new Error("Event not found");
+  }
+
+  event.matchingStatus = status;
+  event.updatedAt = new Date().toISOString();
+
+  await eventsContainer.items.upsert(event);
+}
 router.post("/admin/rebuild-all/:eventId", verifyAdminToken, async (req, res) => {
-    console.log("HIT rebuild-all route");
-    
+  console.log("HIT rebuild-all route");
+
   try {
     const { eventId } = req.params;
-        console.log(
-        "Calling URL:",
-        `${process.env.MATCHING_SERVICE_URL}/api/match/admin/rebuild-all/${eventId}`
-        );
+
+    console.log(
+      "Calling URL:",
+      `${process.env.MATCHING_SERVICE_URL}/api/match/admin/rebuild-all/${eventId}`
+    );
+
     const response = await fetch(
       `${process.env.MATCHING_SERVICE_URL}/api/match/admin/rebuild-all/${eventId}`,
       {
@@ -30,12 +45,17 @@ router.post("/admin/rebuild-all/:eventId", verifyAdminToken, async (req, res) =>
         },
       }
     );
+
     console.log("Matching response status:", response.status);
+
     const data = await parseServiceResponse(response);
 
     if (!response.ok) {
       return res.status(response.status).json(data);
     }
+
+    // ✅ ברגע שהשירות החזיר תשובה תקינה
+    await updateEventMatchingStatus(eventId, "generating matches");
 
     return res.json(data);
   } catch (error) {
