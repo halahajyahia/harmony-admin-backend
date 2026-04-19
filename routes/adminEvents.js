@@ -620,6 +620,7 @@ router.delete("/:id/participants-file", verifyAdminToken, async (req, res) => {
         finishedAt: null,
       },
       updatedAt: new Date().toISOString(),
+      matchingStatus: "pending",
     };
 
     await eventsContainer.item(eventId, eventId).replace(updatedEvent);
